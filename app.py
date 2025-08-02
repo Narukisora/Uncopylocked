@@ -45,51 +45,38 @@ def vote(listing_id, action):
     vote_table = supabase.table("votes")
     listing_table = supabase.table("listings")
 
-    # Step 1: Get current vote (if exists)
+    # Step 1: Check if already voted on this listing
     vote_result = vote_table.select("*").eq("user_ip", ip).eq("listing_id", listing_id).execute()
-    existing_votes = vote_result.data
-    current_vote = existing_votes[0] if existing_votes else None
+    already_voted = len(vote_result.data) > 0
 
-    # Step 2: Get listing
+    if already_voted:
+        # 🚫 Already voted: do nothing
+        return redirect(url_for("index"))
+
+    # Step 2: Fetch the listing
     listing_result = listing_table.select("*").eq("id", listing_id).execute()
     if not listing_result.data:
         return "<h2>Listing not found</h2>"
-
+    
     listing = listing_result.data[0]
 
-    if current_vote:
-        # User already voted
-        if current_vote["action"] == action:
-            # Same vote again → do nothing
-            return redirect(url_for("index"))
-
-        # Switch vote
-        vote_table.update({"action": action}).eq("id", current_vote["id"]).execute()
-
-        if action == "like":
-            listing_table.update({
-                "likes": listing["likes"] + 1,
-                "dislikes": max(listing["dislikes"] - 1, 0)
-            }).eq("id", listing_id).execute()
-        else:
-            listing_table.update({
-                "likes": max(listing["likes"] - 1, 0),
-                "dislikes": listing["dislikes"] + 1
-            }).eq("id", listing_id).execute()
-
+    # Step 3: Count the vote
+    if action == "like":
+        listing_table.update({
+            "likes": listing["likes"] + 1
+        }).eq("id", listing_id).execute()
     else:
-        # First time voting
-        vote_table.insert({
-            "id": str(uuid.uuid4()),
-            "user_ip": ip,
-            "listing_id": listing_id,
-            "action": action
-        }).execute()
+        listing_table.update({
+            "dislikes": listing["dislikes"] + 1
+        }).eq("id", listing_id).execute()
 
-        if action == "like":
-            listing_table.update({"likes": listing["likes"] + 1}).eq("id", listing_id).execute()
-        else:
-            listing_table.update({"dislikes": listing["dislikes"] + 1}).eq("id", listing_id).execute()
+    # Step 4: Record the vote so they can’t vote again
+    vote_table.insert({
+        "id": str(uuid.uuid4()),
+        "user_ip": ip,
+        "listing_id": listing_id,
+        "action": action
+    }).execute()
 
     return redirect(url_for("index"))
 
