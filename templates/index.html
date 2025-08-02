@@ -5,12 +5,17 @@
   <style>
     .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
     .card { border: 1px solid #ccc; border-radius: 10px; padding: 15px; }
-    .topbar { padding: 10px; text-align: right; }
-    a.button { padding: 8px 16px; background: #28a745; color: white; border-radius: 5px; text-decoration: none; }
+    .topbar { padding: 10px; display: flex; justify-content: space-between; }
+    .button { padding: 8px 16px; background: #28a745; color: white; border-radius: 5px; text-decoration: none; }
+    form input[type="text"] { padding: 5px; width: 200px; }
   </style>
 </head>
 <body>
   <div class="topbar">
+    <form method="GET" action="/">
+      <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+      <input type="submit" value="🔍">
+    </form>
     <a class="button" href="{{ url_for('upload') }}">Upload One</a>
   </div>
 
@@ -20,8 +25,8 @@
         <h3>Name: {{ listing.name }}</h3>
         <p>Description: {{ listing.description }}</p>
         <p>Likes: {{ listing.likes }} | Dislikes: {{ listing.dislikes }}</p>
-        <a href="{{ url_for('like', listing_id=listing.id) }}">👍 Like</a> |
-        <a href="{{ url_for('dislike', listing_id=listing.id) }}">👎 Dislike</a> |
+        <a href="{{ url_for('vote', listing_id=listing.id, action='like') }}">👍 Like</a> |
+        <a href="{{ url_for('vote', listing_id=listing.id, action='dislike') }}">👎 Dislike</a> |
         <a href="{{ url_for('download', listing_id=listing.id) }}">📥 Download File</a>
       </div>
     {% endfor %}
