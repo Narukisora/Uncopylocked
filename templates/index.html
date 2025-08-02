@@ -24,9 +24,6 @@
       <div class="card">
         <h3>Name: {{ listing.name }}</h3>
         <p>Description: {{ listing.description }}</p>
-        <p>Likes: {{ listing.likes }} | Dislikes: {{ listing.dislikes }}</p>
-        <a href="{{ url_for('vote', listing_id=listing.id, action='like') }}">👍 Like</a> |
-        <a href="{{ url_for('vote', listing_id=listing.id, action='dislike') }}">👎 Dislike</a> |
         <a href="{{ url_for('download', listing_id=listing.id) }}">📥 Download File</a>
       </div>
     {% endfor %}
