@@ -10,11 +10,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
-    search = request.args.get("search", "")
+    search = request.args.get("search", "").strip()
     query = supabase.table("listings").select("*").order("inserted_at", desc=True)
 
     if search:
-        query = query.ilike("name", f"%{search}%").ilike("description", f"%{search}%")
+        # Use OR condition between name and description
+        query = query.or_(f"name.ilike.%{search}%,description.ilike.%{search}%")
 
     result = query.execute()
     return render_template("index.html", listings=result.data, search=search)
