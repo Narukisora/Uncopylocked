@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Post a Listing</title>
+  <title>Upload Listing</title>
 </head>
 <body>
-  <h1>Post a Listing</h1>
+  <h1>Upload a File Listing</h1>
   <form method="POST">
-    <label>Title:</label><br>
-    <input type="text" name="title" required><br><br>
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br><br>
 
     <label>Description:</label><br>
     <textarea name="description" required></textarea><br><br>
 
-    <label>External Download Link (optional):</label><br>
-    <input type="url" name="download_link" placeholder="https://example.com/file.zip"><br><br>
+    <label>File Link:</label><br>
+    <input type="url" name="file_link" placeholder="https://..." required><br><br>
 
-    <button type="submit">Submit</button>
+    <input type="submit" value="Post">
   </form>
-  <p><a href="{{ url_for('index') }}">Back to Home</a></p>
 </body>
 </html>
