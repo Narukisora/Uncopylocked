@@ -1,21 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Upload Listing</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Listing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Upload a File Listing</h1>
-  <form method="POST">
-    <label>Name:</label><br>
-    <input type="text" name="name" required><br><br>
+    <div class="container">
+        <div class="header">
+            <h1>Upload File Listing</h1>
+            <p class="subtitle">Share your files with the community</p>
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter file name" required>
+            </div>
 
-    <label>Description:</label><br>
-    <textarea name="description" required></textarea><br><br>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="Describe your file..." required></textarea>
+            </div>
 
-    <label>File Link:</label><br>
-    <input type="url" name="file_link" placeholder="https://..." required><br><br>
+            <div class="form-group">
+                <label for="file_link">File Link</label>
+                <input type="url" id="file_link" name="file_link" placeholder="https://example.com/file" required>
+            </div>
 
-    <input type="submit" value="Post">
-  </form>
+            <button type="submit" class="submit-btn">Post Listing</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/">← Back to Listings</a>
+        </div>
+    </div>
 </body>
 </html>
