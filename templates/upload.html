@@ -6,15 +6,15 @@
 </head>
 <body>
   <h1>Post a Listing</h1>
-  <form method="POST" enctype="multipart/form-data">
+  <form method="POST">
     <label>Title:</label><br>
     <input type="text" name="title" required><br><br>
 
     <label>Description:</label><br>
     <textarea name="description" required></textarea><br><br>
 
-    <label>Optional File:</label><br>
-    <input type="file" name="file"><br><br>
+    <label>External Download Link (optional):</label><br>
+    <input type="url" name="download_link" placeholder="https://example.com/file.zip"><br><br>
 
     <button type="submit">Submit</button>
   </form>
