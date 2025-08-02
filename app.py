@@ -33,7 +33,7 @@ def upload():
 
         if has_file:
             filename = str(uuid.uuid4()) + "_" + file.filename
-            content = file.stream.read()
+            content = file.read()
             supabase.storage().from_("uploads").upload(
                 path=filename,
                 file=content,
@@ -41,17 +41,19 @@ def upload():
             )
             filepath = filename
 
+        # ✅ Only JSON-safe values here
         supabase.table("files").insert({
             "title": title,
             "description": description,
-            "filename": file.filename if has_file else None,
-            "filepath": filepath,
+            "filename": filename if has_file else None,
+            "filepath": filepath if has_file else None,
             "has_file": has_file,
             "likes": 0,
             "dislikes": 0
         }).execute()
 
         return redirect(url_for('index'))
+
     return render_template("upload.html")
 
 @app.route('/like/<file_id>')
