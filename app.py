@@ -3,22 +3,20 @@ from supabase import create_client
 import uuid, os
 
 app = Flask(__name__)
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def get_user_ip():
-    return request.headers.get('X-Forwarded-For', request.remote_addr)
-
 @app.route('/')
 def index():
     search = request.args.get("search", "")
-    query = supabase.table("listings").select("*")
+    query = supabase.table("listings").select("*").order("inserted_at", desc=True)
 
     if search:
         query = query.ilike("name", f"%{search}%").ilike("description", f"%{search}%")
 
-    result = query.order("likes", desc=True).execute()
+    result = query.execute()
     return render_template("index.html", listings=result.data, search=search)
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -28,57 +26,11 @@ def upload():
             "id": str(uuid.uuid4()),
             "name": request.form["name"],
             "description": request.form["description"],
-            "file_link": request.form["file_link"],
-            "likes": 0,
-            "dislikes": 0
+            "file_link": request.form["file_link"]
         }
         supabase.table("listings").insert(data).execute()
         return redirect(url_for("index"))
     return render_template("upload.html")
-
-@app.route('/vote/<string:listing_id>/<string:action>')
-def vote(listing_id, action):
-    if action not in ['like', 'dislike']:
-        return redirect(url_for("index"))
-
-    ip = get_user_ip()
-    vote_table = supabase.table("votes")
-    listing_table = supabase.table("listings")
-
-    # Step 1: Check if already voted on this listing
-    vote_result = vote_table.select("*").eq("user_ip", ip).eq("listing_id", listing_id).execute()
-    already_voted = len(vote_result.data) > 0
-
-    if already_voted:
-        # 🚫 Already voted: do nothing
-        return redirect(url_for("index"))
-
-    # Step 2: Fetch the listing
-    listing_result = listing_table.select("*").eq("id", listing_id).execute()
-    if not listing_result.data:
-        return "<h2>Listing not found</h2>"
-    
-    listing = listing_result.data[0]
-
-    # Step 3: Count the vote
-    if action == "like":
-        listing_table.update({
-            "likes": listing["likes"] + 1
-        }).eq("id", listing_id).execute()
-    else:
-        listing_table.update({
-            "dislikes": listing["dislikes"] + 1
-        }).eq("id", listing_id).execute()
-
-    # Step 4: Record the vote so they can’t vote again
-    vote_table.insert({
-        "id": str(uuid.uuid4()),
-        "user_ip": ip,
-        "listing_id": listing_id,
-        "action": action
-    }).execute()
-
-    return redirect(url_for("index"))
 
 @app.route('/download/<string:listing_id>')
 def download(listing_id):
