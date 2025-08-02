@@ -11,13 +11,13 @@
   {% for f in files %}
     <li style="margin-bottom: 25px;">
       <strong>{{ f.title }}</strong><br>
-      File: {{ f.filename if f.has_file else "None / Paid" }}<br>
+      File: {{ "Available" if f.has_download else "None / Paid" }}<br>
       Description: {{ f.description }}<br>
       Likes: {{ f.likes }} | Dislikes: {{ f.dislikes }}<br>
       <a href="{{ url_for('like', file_id=f.id) }}">👍 Like</a>
       <a href="{{ url_for('dislike', file_id=f.id) }}">👎 Dislike</a>
-      {% if f.has_file %}
-        <a href="{{ url_for('download', filepath=f.filepath) }}">📥 Download</a>
+      {% if f.has_download %}
+        <a href="{{ url_for('download', file_id=f.id) }}">📥 Download</a>
       {% endif %}
     </li>
   {% endfor %}
