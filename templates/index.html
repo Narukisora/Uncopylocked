@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>All Listings</title>
+</head>
+<body>
+  <h1>All Listings</h1>
+  <p><a href="{{ url_for('upload') }}">Upload New Listing</a></p>
+  <ul>
+  {% for f in files %}
+    <li style="margin-bottom: 25px;">
+      <strong>{{ f.title }}</strong><br>
+      File: {{ f.filename if f.has_file else "None / Paid" }}<br>
+      Description: {{ f.description }}<br>
+      Likes: {{ f.likes }} | Dislikes: {{ f.dislikes }}<br>
+      <a href="{{ url_for('like', file_id=f.id) }}">👍 Like</a>
+      <a href="{{ url_for('dislike', file_id=f.id) }}">👎 Dislike</a>
+      {% if f.has_file %}
+        <a href="{{ url_for('download', filepath=f.filepath) }}">📥 Download</a>
+      {% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+</body>
+</html>
