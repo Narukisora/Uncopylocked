@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for
 from supabase import create_client, Client
 import os
 
@@ -26,7 +26,6 @@ def upload():
             description = request.form.get('description', '').strip()
             download_link = request.form.get('download_link', '').strip()
 
-            # Validation
             if not title or not description:
                 return "Title and description are required.", 400
 
@@ -55,7 +54,8 @@ def upload():
 
 @app.route('/download/<int:file_id>')
 def download(file_id):
-    file = supabase.table("files").select("*").eq("id", file_id).single().execute().data
+    result = supabase.table("files").select("*").eq("id", file_id).single().execute()
+    file = result.data
 
     if file and file.get("has_download") and file.get("download_link"):
         return redirect(file["download_link"])
