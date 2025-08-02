@@ -1,63 +1,88 @@
 from flask import Flask, render_template, request, redirect, url_for
 from supabase import create_client
-import os, uuid
+import uuid, os
 
-# Load from environment variables or hardcode (not recommended for production)
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://your-project.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "your-anon-or-service-role-key")
-
-# Supabase client setup
+app = Flask(__name__)
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Flask app
-app = Flask(__name__)
+def get_user_ip():
+    return request.headers.get('X-Forwarded-For', request.remote_addr)
 
 @app.route('/')
 def index():
-    result = supabase.table("listings").select("*").execute()
-    listings = result.data
-    return render_template("index.html", listings=listings)
+    search = request.args.get("search", "")
+    query = supabase.table("listings").select("*")
+
+    if search:
+        query = query.ilike("name", f"%{search}%").ilike("description", f"%{search}%")
+
+    result = query.order("likes", desc=True).execute()
+    return render_template("index.html", listings=result.data, search=search)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        name = request.form.get("name")
-        description = request.form.get("description")
-        file_link = request.form.get("file_link")
-
-        supabase.table("listings").insert({
+        data = {
             "id": str(uuid.uuid4()),
-            "name": name,
-            "description": description,
-            "file_link": file_link,
+            "name": request.form["name"],
+            "description": request.form["description"],
+            "file_link": request.form["file_link"],
             "likes": 0,
             "dislikes": 0
-        }).execute()
-
+        }
+        supabase.table("listings").insert(data).execute()
         return redirect(url_for("index"))
-
     return render_template("upload.html")
 
-@app.route('/like/<string:listing_id>')
-def like(listing_id):
-    listing = supabase.table("listings").select("*").eq("id", listing_id).single().execute().data
-    new_likes = listing["likes"] + 1
-    supabase.table("listings").update({"likes": new_likes}).eq("id", listing_id).execute()
-    return redirect(url_for("index"))
+@app.route('/vote/<string:listing_id>/<string:action>')
+def vote(listing_id, action):
+    if action not in ['like', 'dislike']:
+        return redirect(url_for("index"))
 
-@app.route('/dislike/<string:listing_id>')
-def dislike(listing_id):
-    listing = supabase.table("listings").select("*").eq("id", listing_id).single().execute().data
-    new_dislikes = listing["dislikes"] + 1
-    supabase.table("listings").update({"dislikes": new_dislikes}).eq("id", listing_id).execute()
+    ip = get_user_ip()
+    vote_table = supabase.table("votes")
+    listing_table = supabase.table("listings")
+
+    existing_vote = vote_table.select("*").eq("user_ip", ip).eq("listing_id", listing_id).execute().data
+    listing = listing_table.select("*").eq("id", listing_id).single().execute().data
+
+    if existing_vote:
+        old_action = existing_vote[0]["action"]
+        if old_action == action:
+            return redirect(url_for("index"))  # Already voted same way
+        # Switch vote
+        vote_table.update({"action": action}).eq("id", existing_vote[0]["id"]).execute()
+        if action == "like":
+            listing_table.update({
+                "likes": listing["likes"] + 1,
+                "dislikes": max(listing["dislikes"] - 1, 0)
+            }).eq("id", listing_id).execute()
+        else:
+            listing_table.update({
+                "likes": max(listing["likes"] - 1, 0),
+                "dislikes": listing["dislikes"] + 1
+            }).eq("id", listing_id).execute()
+    else:
+        vote_table.insert({
+            "id": str(uuid.uuid4()),
+            "user_ip": ip,
+            "listing_id": listing_id,
+            "action": action
+        }).execute()
+        if action == "like":
+            listing_table.update({"likes": listing["likes"] + 1}).eq("id", listing_id).execute()
+        else:
+            listing_table.update({"dislikes": listing["dislikes"] + 1}).eq("id", listing_id).execute()
+
     return redirect(url_for("index"))
 
 @app.route('/download/<string:listing_id>')
 def download(listing_id):
     listing = supabase.table("listings").select("*").eq("id", listing_id).single().execute().data
-    link = listing["file_link"]
-    if link and link.startswith("http"):
-        return redirect(link)
+    if listing["file_link"] and listing["file_link"].startswith("http"):
+        return redirect(listing["file_link"])
     return "<script>alert('Does not have any downloadable files!'); window.location='/'</script>"
 
 if __name__ == '__main__':
