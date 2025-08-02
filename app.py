@@ -1,7 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
-from supabase_config import supabase
+from supabase import create_client, Client
 import uuid
 import os
+
+# Get Supabase config from environment
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB limit
@@ -56,4 +61,5 @@ def download(filepath):
     return redirect(public['publicUrl'])
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
