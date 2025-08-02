@@ -45,34 +45,40 @@ def vote(listing_id, action):
     vote_table = supabase.table("votes")
     listing_table = supabase.table("listings")
 
-    # Fetch vote if exists
-    vote_result = vote_table.select("*").eq("user_ip", ip).eq("listing_id", listing_id).maybe_single().execute()
-    current_vote = vote_result.data
-    listing = listing_table.select("*").eq("id", listing_id).single().execute().data
+    # Step 1: Get current vote (if exists)
+    vote_result = vote_table.select("*").eq("user_ip", ip).eq("listing_id", listing_id).execute()
+    existing_votes = vote_result.data
+    current_vote = existing_votes[0] if existing_votes else None
+
+    # Step 2: Get listing
+    listing_result = listing_table.select("*").eq("id", listing_id).execute()
+    if not listing_result.data:
+        return "<h2>Listing not found</h2>"
+
+    listing = listing_result.data[0]
 
     if current_vote:
+        # User already voted
         if current_vote["action"] == action:
-            # Same action again → do nothing
+            # Same vote again → do nothing
             return redirect(url_for("index"))
 
-        # Reverse vote
+        # Switch vote
         vote_table.update({"action": action}).eq("id", current_vote["id"]).execute()
 
         if action == "like":
-            # from dislike → like
             listing_table.update({
                 "likes": listing["likes"] + 1,
                 "dislikes": max(listing["dislikes"] - 1, 0)
             }).eq("id", listing_id).execute()
         else:
-            # from like → dislike
             listing_table.update({
                 "likes": max(listing["likes"] - 1, 0),
                 "dislikes": listing["dislikes"] + 1
             }).eq("id", listing_id).execute()
 
     else:
-        # First-time vote
+        # First time voting
         vote_table.insert({
             "id": str(uuid.uuid4()),
             "user_ip": ip,
