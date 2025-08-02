@@ -21,20 +21,35 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        title = request.form['title']
-        description = request.form['description']
-        download_link = request.form.get('download_link', '').strip()
+        try:
+            title = request.form.get('title', '').strip()
+            description = request.form.get('description', '').strip()
+            download_link = request.form.get('download_link', '').strip()
 
-        supabase.table("files").insert({
-            "title": title,
-            "description": description,
-            "download_link": download_link if download_link else None,
-            "has_download": bool(download_link),
-            "likes": 0,
-            "dislikes": 0
-        }).execute()
+            # Validation
+            if not title or not description:
+                return "Title and description are required.", 400
 
-        return redirect(url_for('index'))
+            has_download = bool(download_link)
+
+            data = {
+                "title": title,
+                "description": description,
+                "download_link": download_link if has_download else None,
+                "has_download": has_download,
+                "likes": 0,
+                "dislikes": 0
+            }
+
+            response = supabase.table("files").insert(data).execute()
+
+            if response.error:
+                return f"Error uploading: {response.error.message}", 500
+
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            return f"An error occurred: {str(e)}", 500
 
     return render_template("upload.html")
 
