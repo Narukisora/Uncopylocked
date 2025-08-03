@@ -30,7 +30,6 @@ def upload():
     ip = get_client_ip()
     now = datetime.utcnow()
 
-    # Check last upload time from Supabase
     result = supabase.table("upload_cooldowns").select("last_upload_at").eq("ip_address", ip).execute()
     if result.data:
         last_upload_at_str = result.data[0]["last_upload_at"]
@@ -40,15 +39,20 @@ def upload():
             return f"<script>alert('Please wait {remaining} seconds before uploading again.'); window.location='/upload'</script>"
 
     if request.method == 'POST':
+        file_link = request.form["file_link"]
+
+        allowed_domains = ["discord.com", "discord.gg", "mediafire.com", "drive.google.com", "youtube.com", "youtu.be"]
+        if not any(domain in file_link for domain in allowed_domains):
+            return "<script>alert('Only Discord, Mediafire, Google Drive, or YouTube links are allowed!'); window.location='/upload'</script>"
+
         data = {
             "id": str(uuid.uuid4()),
             "name": request.form["name"],
             "description": request.form["description"],
-            "file_link": request.form["file_link"]
+            "file_link": file_link
         }
         supabase.table("listings").insert(data).execute()
 
-        # Save or update cooldown timestamp in Supabase
         supabase.table("upload_cooldowns").upsert({
             "ip_address": ip,
             "last_upload_at": now.isoformat()
@@ -57,7 +61,7 @@ def upload():
         return redirect(url_for("index"))
 
     return render_template("upload.html")
-
+    
 @app.route('/download/<string:listing_id>')
 def download(listing_id):
     listing = supabase.table("listings").select("*").eq("id", listing_id).single().execute().data
