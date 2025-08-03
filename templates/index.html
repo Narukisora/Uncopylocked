@@ -431,33 +431,33 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title">LEAKS COMMUNITY</h1>
+        <h1 class="page-title">Leaks Community</h1>
         
         <div class="topbar">
             <form method="GET" action="/" class="search-form">
-                <input type="text" name="search" placeholder="◊ Search ◊" value="{{ search }}">
-                <button type="submit" class="search-btn">⟨ PROBE ⟩</button>
+                <input type="text" name="search" placeholder="🔍 Search files..." value="{{ search }}">
+                <button type="submit" class="search-btn">🔎 Search</button>
             </form>
             <a class="upload-btn" href="{{ url_for('upload') }}">
-                <span>⬆</span>
-                UPLOAD FILE
+                <span>⬆️</span>
+                Upload Leak File 💾
             </a>
         </div>
 
         <div class="cards-grid">
             {% for listing in listings %}
                 <div class="card">
-                    <h3>{{ listing.name }}</h3>
-                    <p>{{ listing.description }}</p>
+                    <h3>📄 {{ listing.name }}</h3>
+                    <p>📝 {{ listing.description }}</p>
                     <a href="{{ url_for('download', listing_id=listing.id) }}" class="download-link">
-                        <span>⤓</span>
-                        ACQUIRE INTEL
+                        <span>⤵️</span>
+                        Download File 📥
                     </a>
                 </div>
             {% else %}
                 <div class="no-results">
-                    <h2>◊ LEAKS EMPTY ◊</h2>
-                    <p>BE THE FIRST TO UPLOAD A LEAKED FILE</p>
+                    <h2>🚫 No Leaks Yet</h2>
+                    <p>✨ Be the first to upload a leak!</p>
                 </div>
             {% endfor %}
         </div>
