@@ -432,7 +432,7 @@
 <body>
     <div class="container">
         <h1 class="page-title">Leaks Community</h1>
-        
+
         <div class="topbar">
             <form method="GET" action="/" class="search-form">
                 <input type="text" name="search" placeholder="Search files..." value="{{ search }}">
@@ -451,7 +451,18 @@
                     <p>{{ listing.description }}</p>
                     <a href="{{ url_for('download', listing_id=listing.id) }}" class="download-link">
                         <span>&darr;</span>
-                        Download File
+                        {% set link = listing.file_link.lower() %}
+                        {% if 'discord.com' in link or 'discord.gg' in link %}
+                            Join Server!
+                        {% elif 'youtube.com' in link or 'youtu.be' in link %}
+                            Watch Video!
+                        {% elif 'mediafire.com' in link %}
+                            Download File
+                        {% elif 'drive.google.com' in link %}
+                            Download File
+                        {% else %}
+                            Invalid Link
+                        {% endif %}
                     </a>
                 </div>
             {% else %}
