@@ -435,29 +435,29 @@
         
         <div class="topbar">
             <form method="GET" action="/" class="search-form">
-                <input type="text" name="search" placeholder="🔍 Search files..." value="{{ search }}">
-                <button type="submit" class="search-btn">🔎 Search</button>
+                <input type="text" name="search" placeholder="Search files..." value="{{ search }}">
+                <button type="submit" class="search-btn">Search</button>
             </form>
             <a class="upload-btn" href="{{ url_for('upload') }}">
-                <span>⬆️</span>
-                Upload Leak File 💾
+                <span>&uarr;</span>
+                Upload Leak File
             </a>
         </div>
 
         <div class="cards-grid">
             {% for listing in listings %}
                 <div class="card">
-                    <h3>📄 {{ listing.name }}</h3>
-                    <p>📝 {{ listing.description }}</p>
+                    <h3>{{ listing.name }}</h3>
+                    <p>{{ listing.description }}</p>
                     <a href="{{ url_for('download', listing_id=listing.id) }}" class="download-link">
-                        <span>⤵️</span>
-                        Download File 📥
+                        <span>&darr;</span>
+                        Download File
                     </a>
                 </div>
             {% else %}
                 <div class="no-results">
-                    <h2>🚫 No Leaks Yet</h2>
-                    <p>✨ Be the first to upload a leak!</p>
+                    <h2>No Leaks Yet</h2>
+                    <p>Be the first to upload a leaked file.</p>
                 </div>
             {% endfor %}
         </div>
