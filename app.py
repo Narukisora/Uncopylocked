@@ -1,15 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for
 from supabase import create_client
-import uuid, os, time
+from datetime import datetime, timedelta
+import uuid, os
 
 app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Store last upload time per IP
-last_upload_time = {}
 
 COOLDOWN_SECONDS = 120  # 2 minutes
 
@@ -30,14 +28,18 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     ip = get_client_ip()
+    now = datetime.utcnow()
 
-    if request.method == 'POST':
-        now = time.time()
-        last_time = last_upload_time.get(ip, 0)
-        if now - last_time < COOLDOWN_SECONDS:
-            remaining = int(COOLDOWN_SECONDS - (now - last_time))
+    # Check last upload time from Supabase
+    result = supabase.table("upload_cooldowns").select("last_upload_at").eq("ip_address", ip).execute()
+    if result.data:
+        last_upload_at_str = result.data[0]["last_upload_at"]
+        last_upload_at = datetime.fromisoformat(last_upload_at_str.replace("Z", "+00:00"))
+        if now - last_upload_at < timedelta(seconds=COOLDOWN_SECONDS):
+            remaining = int(COOLDOWN_SECONDS - (now - last_upload_at).total_seconds())
             return f"<script>alert('Please wait {remaining} seconds before uploading again.'); window.location='/upload'</script>"
 
+    if request.method == 'POST':
         data = {
             "id": str(uuid.uuid4()),
             "name": request.form["name"],
@@ -46,8 +48,11 @@ def upload():
         }
         supabase.table("listings").insert(data).execute()
 
-        # Update last upload time
-        last_upload_time[ip] = now
+        # Save or update cooldown timestamp in Supabase
+        supabase.table("upload_cooldowns").upsert({
+            "ip_address": ip,
+            "last_upload_at": now.isoformat()
+        }).execute()
 
         return redirect(url_for("index"))
 
