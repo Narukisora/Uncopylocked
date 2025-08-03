@@ -378,7 +378,7 @@
             <h1>Upload a Leak</h1>
             <p class="subtitle">Share your leaked file with the community</p>
         </div>
-        
+
         <form method="POST">
             <div class="form-group">
                 <label for="name">File Title</label>
@@ -393,6 +393,9 @@
             <div class="form-group">
                 <label for="file_link">Download Link</label>
                 <input type="url" id="file_link" name="file_link" placeholder="https://example.com/your-file" required>
+                <small style="color: gray; font-size: 0.9em;">
+                    Only links from <strong>Discord</strong>, <strong>Mediafire</strong>, <strong>Google Drive</strong>, and <strong>YouTube</strong> are allowed.
+                </small>
             </div>
 
             <button type="submit" class="submit-btn">Upload Leak</button>
